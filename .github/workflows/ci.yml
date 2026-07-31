@@ -1,0 +1,168 @@
+name: CI and AI Review
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  laravel-tests:
+    name: Laravel Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node Packages
+        run: npm ci
+
+      - name: Build Frontend Assets
+        run: npm run build
+
+      - name: Prepare Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Set Directory Permissions
+        run: chmod -R 775 storage bootstrap/cache
+
+      - name: Run Laravel Tests
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+        run: php artisan test
+
+  ai-review:
+    name: Gemini AI Review
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Review Pull Request
+        uses: actions/github-script@v7
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            if (!process.env.GEMINI_API_KEY) {
+              console.log("GEMINI_API_KEY is not configured.");
+              return;
+            }
+
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner,
+                repo,
+                pull_number: prNumber,
+              }
+            );
+
+            const MAX_FILES = 20;
+
+            const diffs = files
+              .slice(0, MAX_FILES)
+              .map(file => {
+                const patch = file.patch ?? "[Binary file or patch unavailable]";
+                return `### ${file.filename}\n\`\`\`diff\n${patch}\n\`\`\``;
+              })
+              .join("\n\n");
+
+            const prompt = `
+            あなたはLaravelのシニアエンジニアです。
+
+            以下のPull Requestをレビューしてください。
+
+            観点
+            - バグの可能性
+            - セキュリティ
+            - Laravelらしい実装
+            - 可読性
+            - パフォーマンス
+
+            必要な指摘のみ日本語で箇条書きしてください。
+
+            ${diffs}
+            `;
+
+            const response = await fetch(
+              `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  contents: [
+                    {
+                      parts: [
+                        {
+                          text: prompt,
+                        },
+                      ],
+                    },
+                  ],
+                }),
+              }
+            );
+
+            if (!response.ok) {
+              console.log(await response.text());
+              return;
+            }
+
+            const json = await response.json();
+
+            const review =
+              json.candidates?.[0]?.content?.parts?.[0]?.text ??
+              "レビュー結果を取得できませんでした。";
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body: `## 🤖 Gemini AI Review\n\n${review}`,
+            });

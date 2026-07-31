@@ -28,5 +28,11 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
+  node:
+    image: node:22-alpine
+    container_name: oshikatsu-node
+    working_dir: /var/www/html
+    volumes:
+        - .:/var/www/html
 volumes:
   mysql-data:
