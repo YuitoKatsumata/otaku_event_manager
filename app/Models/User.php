@@ -27,12 +27,17 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
-    
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    function events()
+    {
+        return $this->hasMany(Event::class);
     }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Event\EventController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -17,6 +18,9 @@ Route::middleware('auth')->group(function () {
 
     // ログアウト
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    Route::get('/event', [EventController::class, 'create'])->name('event.create');
+    Route::post('/event', [EventController::class, 'store'])->name('event.store');
 });
 
 // 未認証ユーザー向けのルート

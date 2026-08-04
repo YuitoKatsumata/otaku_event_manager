@@ -1,314 +1,711 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eventify - ダッシュボード</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Noto Sans JP"', 'Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0284c7',
-                            600: '#0369a1',
-                            700: '#075985',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eventify - ワークスペース</title>
+  <!-- Google Fonts: 欧文(Inter) × 和文(Noto Sans JP) のプロ仕様ペアリング -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* カラーシステム：空色（Sky）ベースをSaaS用にトーンダウン＆調整 */
+      --sky-50: #F0F9FF;
+      --sky-100: #E0F2FE;
+      --sky-500: #0284C7;
+      --sky-600: #0369A1;
+      --sky-700: #075985;
+
+      --neutral-50: #F8FAFC;
+      --neutral-100: #F1F5F9;
+      --neutral-200: #E2E8F0;
+      --neutral-300: #CBD5E1;
+      --neutral-600: #475569;
+      --neutral-700: #334155;
+      --neutral-900: #0F172A;
+
+      --sidebar-width: 240px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      /* 💡 欧文フォント(Inter)を優先指定！数字や英語が劇的にキレイになるよ */
+      font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+      background-color: var(--neutral-50);
+      color: var(--neutral-900);
+      min-height: 100vh;
+      display: flex;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --------------------------------------------------
+       1. SIDEBAR (App Navigation)
+    -------------------------------------------------- */
+    aside.sidebar {
+      width: var(--sidebar-width);
+      background: #FFFFFF;
+      border-right: 1px solid var(--neutral-200);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      z-index: 50;
+    }
+
+    .sidebar-header {
+      height: 60px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--neutral-200);
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--sky-500);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--neutral-900); }
+
+    .nav-group {
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--neutral-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 8px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--neutral-600);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background: var(--neutral-100);
+      color: var(--neutral-900);
+    }
+
+    .nav-item.active {
+      background: var(--sky-50);
+      color: var(--sky-500);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px;
+      border-top: 1px solid var(--neutral-200);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--sky-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--sky-500);
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-plan { font-size: 11px; color: var(--neutral-600); }
+
+    /* --------------------------------------------------
+       2. MAIN LAYOUT & HEADER
+    -------------------------------------------------- */
+    main.main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    header.top-bar {
+      height: 60px;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--neutral-200);
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .search-box {
+      position: relative;
+      width: 320px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 7px 12px 7px 32px;
+      border: 1px solid var(--neutral-200);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--neutral-50);
+      outline: none;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .search-box input:focus {
+      border-color: var(--sky-500);
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    }
+
+    .search-box::before {
+      content: "🔍";
+      position: absolute;
+      left: 10px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* ボタン共通パーツ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-default {
+      background: #FFFFFF;
+      border-color: var(--neutral-200);
+      color: var(--neutral-900);
+    }
+    .btn-default:hover { background: var(--neutral-100); }
+
+    .btn-primary {
+      background: var(--sky-500);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--sky-600); }
+
+    /* --------------------------------------------------
+       3. DASHBOARD CONTENT AREA
+    -------------------------------------------------- */
+    .content-container {
+      padding: 24px 28px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .page-header {
+      margin-bottom: 20px;
+    }
+
+    .page-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .page-header p {
+      font-size: 12px;
+      color: var(--neutral-600);
+      margin-top: 2px;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: #FFFFFF;
+      border: 1px solid var(--neutral-200);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--neutral-600);
+    }
+
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    /* Toolbar & Filters */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .chip {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #FFFFFF;
+      border: 1px solid var(--neutral-200);
+      color: var(--neutral-600);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chip.active {
+      background: var(--sky-50);
+      border-color: var(--sky-500);
+      color: var(--sky-500);
+      font-weight: 600;
+    }
+
+    .chip:hover:not(.active) {
+      border-color: var(--neutral-300);
+      color: var(--neutral-900);
+    }
+
+    /* --------------------------------------------------
+       4. MAIN GRID & CONTENT
+    -------------------------------------------------- */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 24px;
+    }
+
+    /* Event Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #FFFFFF;
+      border: 1px solid var(--neutral-200);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .card:hover {
+      border-color: var(--neutral-300);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    .card-banner {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      position: relative;
+    }
+
+    .card-banner.anime { background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%); }
+    .card-banner.live  { background: linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%); }
+    .card-banner.music { background: linear-gradient(135deg, #EDE9FE 0%, #C4B5FD 100%); }
+    .card-banner.game  { background: linear-gradient(135deg, #DCFCE7 0%, #86EFAC 100%); }
+
+    .card-action-menu {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: rgba(255,255,255,0.85);
+      border: none;
+      width: 26px; height: 26px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      color: var(--neutral-700);
+      transition: background 0.15s;
+    }
+
+    .card-action-menu:hover { background: #FFFFFF; }
+
+    .card-body {
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-category {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--sky-500);
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .card-details {
+      font-size: 12px;
+      color: var(--neutral-600);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .card-footer {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid var(--neutral-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Badges */
+    .badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-plan { background: #FEF3C7; color: #B45309; }
+    .badge-done { background: #DCFCE7; color: #15803D; }
+
+    /* Timeline Widget */
+    .widget {
+      background: #FFFFFF;
+      border: 1px solid var(--neutral-200);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .widget-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .widget-title a {
+      font-size: 11px;
+      color: var(--sky-500);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .date-badge {
+      background: var(--neutral-50);
+      border: 1px solid var(--neutral-200);
+      border-radius: 6px;
+      padding: 4px 8px;
+      text-align: center;
+      min-width: 44px;
+    }
+
+    .date-badge .m { font-size: 9px; font-weight: 700; color: var(--neutral-600); text-transform: uppercase; }
+    .date-badge .d { font-size: 15px; font-weight: 700; color: var(--neutral-900); line-height: 1; }
+
+    .timeline-content {
+      font-size: 12px;
+    }
+
+    .timeline-content .t { font-weight: 600; color: var(--neutral-900); margin-bottom: 2px; }
+    .timeline-content .sub { color: var(--neutral-600); font-size: 11px; }
+
+  </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen">
+<body>
 
-    <!-- HEADER -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+<!-- SIDEBAR NAVIGATION -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">Event<span>ify</span></div>
+  </div>
 
-            <!-- ロゴ & 検索バー -->
-            <div class="flex items-center gap-6 flex-1">
-                <a href="#" class="text-2xl font-bold tracking-tight text-slate-900 flex-shrink-0">
-                    Event<span class="text-brand-500">ify</span>
-                </a>
+  <div class="nav-group">
+    <div class="nav-label">メイン</div>
+    <a href="#" class="nav-item active">📊 ダッシュボード</a>
+    <a href="#" class="nav-item">📅 イベント一覧</a>
+    <a href="#" class="nav-item">🗓 カレンダー</a>
+    <a href="#" class="nav-item">⭐ ウィッシュリスト</a>
+  </div>
 
-                <!-- ヘッダー埋め込み型の検索バー（実用的！） -->
-                <div class="relative max-w-md w-full hidden sm:block">
-                    <input type="text" placeholder="イベント名・アーティスト・会場で検索..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-100 border border-transparent rounded-xl focus:bg-white focus:border-brand-500 focus:outline-none transition">
-                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                </div>
+  <div class="nav-group">
+    <div class="nav-label">管理・分析</div>
+    <a href="#" class="nav-item">📈 参加レポート</a>
+    <a href="#" class="nav-item">🏷 カテゴリ設定</a>
+    <a href="#" class="nav-item">⚙️ アカウント設定</a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="avatar">デ</div>
+    <div class="user-info">
+      <div class="user-name">{{ auth()->user()->name }}</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="search-box">
+      <input type="text" placeholder="イベント・会場・アーティストで検索 (Cmd+K)">
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-default">📥 CSV出力</button>
+      <a href="{{ route('event.create') }}" class="btn btn-primary">＋ イベント追加</a>
+    </div>
+  </header>
+
+  <!-- Dashboard Content -->
+  <div class="content-container">
+
+    <div class="page-header">
+      <h1>イベント管理</h1>
+      <p>参加予定および過去ログを一括管理・分析できます</p>
+    </div>
+
+    <!-- KPI Metrics -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">参加済み（累計）</div>
+        <div class="kpi-value">24</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">参加予定</div>
+        <div class="kpi-value">8</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">今月のイベント</div>
+        <div class="kpi-value">3</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">ウィッシュリスト</div>
+        <div class="kpi-value">12</div>
+      </div>
+    </div>
+
+    <!-- Controls & Filter -->
+    <div class="toolbar">
+      <div class="filter-group">
+        <div class="chip active">すべて</div>
+        <div class="chip">アニメ</div>
+        <div class="chip">ライブ・音楽</div>
+        <div class="chip">ゲーム</div>
+        <div class="chip">声優</div>
+      </div>
+    </div>
+
+    <!-- Main Section Split -->
+    <div class="dashboard-grid">
+
+      <!-- Primary Grid -->
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="card-banner anime">
+            🌸
+            <button class="card-action-menu">•••</button>
+          </div>
+          <div class="card-body">
+            <div class="card-category">アニメ</div>
+            <div class="card-title">Re:ゼロ 10周年記念展</div>
+            <div class="card-details">
+              <span>📅 2026/07/12 (土)</span>
+              <span>📍 池袋サンシャインシティ</span>
             </div>
-
-            <!-- 右側ナビゲーション＆ユーザーエリア -->
-            <div class="flex items-center gap-3">
-                <button type="button" class="bg-brand-500 hover:bg-brand-600 text-white font-medium text-sm py-2 px-4 rounded-xl shadow-sm transition active:scale-[0.98] flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span class="hidden sm:inline">イベント追加</span>
-                </button>
-
-                <!-- 通知アイコン -->
-                <button type="button" class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"/></svg>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
-                </button>
-
-                <!-- ユーザーアバター -->
-                <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center border border-brand-200 cursor-pointer">
-                    TK
-                </div>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-medium text-sm py-2 px-4 rounded-xl shadow-sm transition active:scale-[0.98] flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span class="hidden sm:inline">ログアウト</span>
-                    </button>
-                </form>
+            <div class="card-footer">
+              <span class="badge badge-plan">参加予定</span>
+              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
             </div>
-        </div>
-    </header>
-
-    <!-- MAIN CONTAINER -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-        <!-- DASHBOARD HEADER（挨拶 ＋ 概要スタッツ） -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900">ようこそ、{{ Auth::user()->name }}さん</h1>
-                <p class="text-xs text-slate-500 mt-1">次のイベント「Re:ゼロ 10周年記念展」まであと <span class="text-brand-600 font-bold">12日</span> です！</p>
-            </div>
-
-            <!-- コンパクトになったスタッツエリア -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
-                <div>
-                    <div class="text-xs text-slate-400 font-medium">参加済み</div>
-                    <div class="text-xl font-bold text-slate-800">24 <span class="text-xs text-slate-400 font-normal">件</span></div>
-                </div>
-                <div>
-                    <div class="text-xs text-slate-400 font-medium">参加予定</div>
-                    <div class="text-xl font-bold text-brand-600">8 <span class="text-xs text-slate-400 font-normal">件</span></div>
-                </div>
-                <div>
-                    <div class="text-xs text-slate-400 font-medium">今月</div>
-                    <div class="text-xl font-bold text-slate-800">3 <span class="text-xs text-slate-400 font-normal">件</span></div>
-                </div>
-                <div>
-                    <div class="text-xs text-slate-400 font-medium">行きたい</div>
-                    <div class="text-xl font-bold text-slate-800">12 <span class="text-xs text-slate-400 font-normal">件</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- LAYOUT GRID (メインコンテンツ ＋ サイドバー) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <!-- LEFT 2 COLUMNS: イベント一覧 -->
-            <div class="lg:col-span-2 space-y-6">
-
-                <!-- フィルターチップ ＆ 並び替え -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
-                        <button class="px-3.5 py-1.5 text-xs font-semibold bg-brand-500 text-white rounded-xl whitespace-nowrap shadow-sm shadow-brand-500/20">すべて</button>
-                        <button class="px-3.5 py-1.5 text-xs font-medium bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl whitespace-nowrap transition">アニメ</button>
-                        <button class="px-3.5 py-1.5 text-xs font-medium bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl whitespace-nowrap transition">ライブ</button>
-                        <button class="px-3.5 py-1.5 text-xs font-medium bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl whitespace-nowrap transition">ゲーム</button>
-                        <button class="px-3.5 py-1.5 text-xs font-medium bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl whitespace-nowrap transition">声優</button>
-                    </div>
-
-                    <select class="text-xs text-slate-600 bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none self-end sm:self-auto">
-                        <option>開催日が近い順</option>
-                        <option>最近追加した順</option>
-                    </select>
-                </div>
-
-                <!-- CARDS GRID -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                    <!-- Card 1 -->
-                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden hover:shadow-md transition group cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <!-- カバー領域（単一の絵文字ではなくビジュアルヘッダー風に） -->
-                            <div class="h-28 bg-gradient-to-br from-sky-400 to-brand-600 p-4 relative flex items-end">
-                                <span class="bg-white/90 backdrop-blur-md text-brand-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">アニメ</span>
-                            </div>
-                            <div class="p-4 space-y-2">
-                                <h3 class="font-bold text-slate-800 text-sm group-hover:text-brand-600 transition">Re:ゼロ 10周年記念展</h3>
-                                <div class="text-xs text-slate-500 space-y-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <span>2026年7月12日（土）</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        <span>池袋サンシャインシティ</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 pb-4 pt-2 border-t border-slate-50 flex items-center justify-between">
-                            <span class="bg-amber-50 text-amber-700 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-amber-200/60">参加予定</span>
-                            <span class="text-xs font-semibold text-brand-600 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">詳細 →</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 2 -->
-                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden hover:shadow-md transition group cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="h-28 bg-gradient-to-br from-purple-500 to-indigo-600 p-4 relative flex items-end">
-                                <span class="bg-white/90 backdrop-blur-md text-purple-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">ライブ</span>
-                            </div>
-                            <div class="p-4 space-y-2">
-                                <h3 class="font-bold text-slate-800 text-sm group-hover:text-brand-600 transition">アニサマ2026 DAY1</h3>
-                                <div class="text-xs text-slate-500 space-y-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <span>2026年8月23日（土）</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        <span>さいたまスーパーアリーナ</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 pb-4 pt-2 border-t border-slate-50 flex items-center justify-between">
-                            <span class="bg-brand-50 text-brand-700 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-brand-200/60">発券済み</span>
-                            <span class="text-xs font-semibold text-brand-600 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">詳細 →</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 3 -->
-                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden hover:shadow-md transition group cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="h-28 bg-gradient-to-br from-emerald-400 to-teal-600 p-4 relative flex items-end">
-                                <span class="bg-white/90 backdrop-blur-md text-teal-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">ゲーム</span>
-                            </div>
-                            <div class="p-4 space-y-2">
-                                <h3 class="font-bold text-slate-800 text-sm group-hover:text-brand-600 transition">アークナイツ 周年イベント</h3>
-                                <div class="text-xs text-slate-500 space-y-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <span>2026年6月15日（月）</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        <span>東京ビッグサイト</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 pb-4 pt-2 border-t border-slate-50 flex items-center justify-between">
-                            <span class="bg-slate-100 text-slate-500 text-[10px] font-semibold px-2 py-0.5 rounded-md">参加済み</span>
-                            <span class="text-xs font-semibold text-brand-600 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">詳細 →</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 4 -->
-                    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden hover:shadow-md transition group cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="h-28 bg-gradient-to-br from-rose-400 to-orange-500 p-4 relative flex items-end">
-                                <span class="bg-white/90 backdrop-blur-md text-rose-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">声優</span>
-                            </div>
-                            <div class="p-4 space-y-2">
-                                <h3 class="font-bold text-slate-800 text-sm group-hover:text-brand-600 transition">花澤香菜 LIVE TOUR 2026</h3>
-                                <div class="text-xs text-slate-500 space-y-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <span>2026年5月18日（日）</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        <span>Zepp Shinjuku</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 pb-4 pt-2 border-t border-slate-50 flex items-center justify-between">
-                            <span class="bg-slate-100 text-slate-500 text-[10px] font-semibold px-2 py-0.5 rounded-md">参加済み</span>
-                            <span class="text-xs font-semibold text-brand-600 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">詳細 →</span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- RIGHT 1 COLUMN: サイドバー（実用的な機能情報） -->
-            <div class="space-y-6">
-
-                <!-- 今後のタイムライン -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h2 class="font-bold text-slate-800 text-sm">直近のスケジュール</h2>
-                        <a href="#" class="text-xs text-brand-600 font-semibold hover:underline">カレンダーで見る</a>
-                    </div>
-
-                    <div class="space-y-3">
-                        <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition">
-                            <div class="bg-brand-50 text-brand-700 rounded-xl p-2 text-center min-w-[48px] border border-brand-100">
-                                <div class="text-[10px] font-bold uppercase tracking-wider">7月</div>
-                                <div class="text-base font-bold leading-none">12</div>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-xs font-bold text-slate-800 truncate">Re:ゼロ 10周年記念展</p>
-                                <p class="text-[11px] text-slate-400 truncate">池袋サンシャインシティ</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition">
-                            <div class="bg-purple-50 text-purple-700 rounded-xl p-2 text-center min-w-[48px] border border-purple-100">
-                                <div class="text-[10px] font-bold uppercase tracking-wider">8月</div>
-                                <div class="text-base font-bold leading-none">23</div>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-xs font-bold text-slate-800 truncate">アニサマ2026 DAY1</p>
-                                <p class="text-[11px] text-slate-400 truncate">さいたまスーパーアリーナ</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition">
-                            <div class="bg-purple-50 text-purple-700 rounded-xl p-2 text-center min-w-[48px] border border-purple-100">
-                                <div class="text-[10px] font-bold uppercase tracking-wider">8月</div>
-                                <div class="text-base font-bold leading-none">24</div>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-xs font-bold text-slate-800 truncate">アニサマ2026 DAY2</p>
-                                <p class="text-[11px] text-slate-400 truncate">さいたまスーパーアリーナ</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- リアルなアプリっぽさを出す「リマインダー /ToDo」ウィジェット -->
-                <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-sm space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-brand-400 tracking-wider uppercase">Ticket Reminder</span>
-                        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                    </div>
-                    <div>
-                        <p class="text-sm font-bold">アニサマ2026 発券開始</p>
-                        <p class="text-xs text-slate-300 mt-1">8月10日(金) 10:00〜 コンビニ発券可能</p>
-                    </div>
-                    <button class="w-full bg-white/10 hover:bg-white/20 text-xs font-medium py-2 rounded-xl backdrop-blur-sm transition">
-                        詳細を確認する
-                    </button>
-                </div>
-
-            </div>
-
+          </div>
         </div>
 
-    </main>
+        <div class="card">
+          <div class="card-banner live">
+            🎤
+            <button class="card-action-menu">•••</button>
+          </div>
+          <div class="card-body">
+            <div class="card-category">ライブ</div>
+            <div class="card-title">アニサマ2026 DAY1</div>
+            <div class="card-details">
+              <span>📅 2026/08/23 (土)</span>
+              <span>📍 さいたまスーパーアリーナ</span>
+            </div>
+            <div class="card-footer">
+              <span class="badge badge-plan">参加予定</span>
+              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-banner music">
+            🎵
+            <button class="card-action-menu">•••</button>
+          </div>
+          <div class="card-body">
+            <div class="card-category">声優</div>
+            <div class="card-title">花澤香菜 LIVE TOUR 2026</div>
+            <div class="card-details">
+              <span>📅 2026/05/18 (日)</span>
+              <span>📍 Zepp Shinjuku</span>
+            </div>
+            <div class="card-footer">
+              <span class="badge badge-done">参加済み</span>
+              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-banner game">
+            🎮
+            <button class="card-action-menu">•••</button>
+          </div>
+          <div class="card-body">
+            <div class="card-category">ゲーム</div>
+            <div class="card-title">アークナイツ 周年リアルイベント</div>
+            <div class="card-details">
+              <span>📅 2026/06/15 (月)</span>
+              <span>📍 東京ビッグサイト</span>
+            </div>
+            <div class="card-footer">
+              <span class="badge badge-done">参加済み</span>
+              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar Widget -->
+      <div class="widget-area">
+        <div class="widget">
+          <div class="widget-title">
+            今後の予定
+            <a href="#">すべて見る →</a>
+          </div>
+          <div class="timeline-list">
+
+            <div class="timeline-item">
+              <div class="date-badge">
+                <div class="m">Jul</div>
+                <div class="d">12</div>
+              </div>
+              <div class="timeline-content">
+                <div class="t">Re:ゼロ 10周年記念展</div>
+                <div class="sub">📍 池袋サンシャインシティ</div>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="date-badge">
+                <div class="m">Aug</div>
+                <div class="d">23</div>
+              </div>
+              <div class="timeline-content">
+                <div class="t">アニサマ2026 DAY1</div>
+                <div class="sub">📍 さいたまスーパーアリーナ</div>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="date-badge">
+                <div class="m">Aug</div>
+                <div class="d">24</div>
+              </div>
+              <div class="timeline-content">
+                <div class="t">アニサマ2026 DAY2</div>
+                <div class="sub">📍 さいたまスーパーアリーナ</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
 
 </body>
 </html>
