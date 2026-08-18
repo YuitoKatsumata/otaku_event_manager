@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Event\EventController;
+use App\Http\Controllers\Home\HomeController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -12,9 +13,7 @@ Route::get('/', function () {
 // 認証が必要なルート
 Route::middleware('auth')->group(function () {
     // ホーム画面（ログイン後のダッシュボード）
-    Route::get('/home', function() {
-        return view('home');
-    })->name('home');
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
 
     // ログアウト
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
