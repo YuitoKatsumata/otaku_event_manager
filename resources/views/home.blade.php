@@ -498,17 +498,17 @@
 
   <div class="nav-group">
     <div class="nav-label">メイン</div>
-    <a href="#" class="nav-item active">📊 ダッシュボード</a>
-    <a href="#" class="nav-item">📅 イベント一覧</a>
-    <a href="#" class="nav-item">🗓 カレンダー</a>
-    <a href="#" class="nav-item">⭐ ウィッシュリスト</a>
+    <a href="#" class="nav-item active">ダッシュボード</a>
+    <a href="#" class="nav-item">イベント一覧</a>
+    <a href="#" class="nav-item">カレンダー</a>
+    <a href="#" class="nav-item">ウィッシュリスト</a>
   </div>
 
   <div class="nav-group">
     <div class="nav-label">管理・分析</div>
-    <a href="#" class="nav-item">📈 参加レポート</a>
-    <a href="#" class="nav-item">🏷 カテゴリ設定</a>
-    <a href="#" class="nav-item">⚙️ アカウント設定</a>
+    <a href="#" class="nav-item">参加レポート</a>
+    <a href="#" class="nav-item">カテゴリ設定</a>
+    <a href="#" class="nav-item">アカウント設定</a>
   </div>
 
   <div class="sidebar-footer">
@@ -528,8 +528,8 @@
       <input type="text" placeholder="イベント・会場・アーティストで検索 (Cmd+K)">
     </div>
     <div class="top-actions">
-      <button class="btn btn-default">📥 CSV出力</button>
-      <a href="{{ route('event.create') }}" class="btn btn-primary">＋ イベント追加</a>
+        <button class="btn btn-default">📥 CSV出力</button>
+        <a href="{{ route('event.create') }}" class="btn btn-primary" style="text-decoration: none !important;">＋ イベント追加</a>
     </div>
   </header>
 
@@ -545,19 +545,15 @@
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-title">参加済み（累計）</div>
-        <div class="kpi-value">24</div>
+        <div class="kpi-value">{{ $completedCount }}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-title">参加予定</div>
-        <div class="kpi-value">8</div>
+        <div class="kpi-value">{{ $scheduledCount }}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-title">今月のイベント</div>
-        <div class="kpi-value">3</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">ウィッシュリスト</div>
-        <div class="kpi-value">12</div>
+        <div class="kpi-value">{{ $monthlyCount }}</div>
       </div>
     </div>
 
@@ -565,10 +561,9 @@
     <div class="toolbar">
       <div class="filter-group">
         <div class="chip active">すべて</div>
-        <div class="chip">アニメ</div>
-        <div class="chip">ライブ・音楽</div>
-        <div class="chip">ゲーム</div>
-        <div class="chip">声優</div>
+        @foreach ($categories as $category)
+          <div class="chip">{{ $category->name }}</div>
+        @endforeach
       </div>
     </div>
 
@@ -578,82 +573,31 @@
       <!-- Primary Grid -->
       <div class="cards-grid">
 
-        <div class="card">
-          <div class="card-banner anime">
-            🌸
-            <button class="card-action-menu">•••</button>
-          </div>
-          <div class="card-body">
-            <div class="card-category">アニメ</div>
-            <div class="card-title">Re:ゼロ 10周年記念展</div>
-            <div class="card-details">
-              <span>📅 2026/07/12 (土)</span>
-              <span>📍 池袋サンシャインシティ</span>
+        @foreach ($events as $event)
+            <div class="card">
+            <div class="card-banner {{ $event->category->slug }}">
+                @if($event->image_path)
+                    <img src="{{ asset('storage/' . $event->image_path) }}" alt="{{ $event->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                @else
+                    <div style="width: 100%; height: 100%; background-color: {{ $event->category->color }}; display: flex; align-items: center; justify-content: center;">
+                    </div>
+                @endif
+                <button class="card-action-menu">•••</button>
             </div>
-            <div class="card-footer">
-              <span class="badge badge-plan">参加予定</span>
-              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
+            <div class="card-body">
+                <div class="card-category">{{ $event->category->name }}</div>
+                <div class="card-title">{{ $event->title }}</div>
+                <div class="card-details">
+                <span>📅 {{ $event->event_date->format('Y/m/d') }} ({{ $event->event_date->format('D') }})</span>
+                <span>📍 {{ $event->location }}</span>
+                </div>
+                <div class="card-footer">
+                <span class="badge badge-plan">{{ $event->status }}</span>
+                <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
+                </div>
             </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-banner live">
-            🎤
-            <button class="card-action-menu">•••</button>
-          </div>
-          <div class="card-body">
-            <div class="card-category">ライブ</div>
-            <div class="card-title">アニサマ2026 DAY1</div>
-            <div class="card-details">
-              <span>📅 2026/08/23 (土)</span>
-              <span>📍 さいたまスーパーアリーナ</span>
             </div>
-            <div class="card-footer">
-              <span class="badge badge-plan">参加予定</span>
-              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-banner music">
-            🎵
-            <button class="card-action-menu">•••</button>
-          </div>
-          <div class="card-body">
-            <div class="card-category">声優</div>
-            <div class="card-title">花澤香菜 LIVE TOUR 2026</div>
-            <div class="card-details">
-              <span>📅 2026/05/18 (日)</span>
-              <span>📍 Zepp Shinjuku</span>
-            </div>
-            <div class="card-footer">
-              <span class="badge badge-done">参加済み</span>
-              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-banner game">
-            🎮
-            <button class="card-action-menu">•••</button>
-          </div>
-          <div class="card-body">
-            <div class="card-category">ゲーム</div>
-            <div class="card-title">アークナイツ 周年リアルイベント</div>
-            <div class="card-details">
-              <span>📅 2026/06/15 (月)</span>
-              <span>📍 東京ビッグサイト</span>
-            </div>
-            <div class="card-footer">
-              <span class="badge badge-done">参加済み</span>
-              <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
-            </div>
-          </div>
-        </div>
-
+        @endforeach
       </div>
 
       <!-- Sidebar Widget -->
@@ -664,39 +608,18 @@
             <a href="#">すべて見る →</a>
           </div>
           <div class="timeline-list">
-
-            <div class="timeline-item">
-              <div class="date-badge">
-                <div class="m">Jul</div>
-                <div class="d">12</div>
-              </div>
-              <div class="timeline-content">
-                <div class="t">Re:ゼロ 10周年記念展</div>
-                <div class="sub">📍 池袋サンシャインシティ</div>
-              </div>
-            </div>
-
-            <div class="timeline-item">
-              <div class="date-badge">
-                <div class="m">Aug</div>
-                <div class="d">23</div>
-              </div>
-              <div class="timeline-content">
-                <div class="t">アニサマ2026 DAY1</div>
-                <div class="sub">📍 さいたまスーパーアリーナ</div>
-              </div>
-            </div>
-
-            <div class="timeline-item">
-              <div class="date-badge">
-                <div class="m">Aug</div>
-                <div class="d">24</div>
-              </div>
-              <div class="timeline-content">
-                <div class="t">アニサマ2026 DAY2</div>
-                <div class="sub">📍 さいたまスーパーアリーナ</div>
-              </div>
-            </div>
+            @foreach ($events as $event)
+                <div class="timeline-item">
+                    <div class="date-badge">
+                    <div class="m">{{ $event->event_date->format('M') }}</div>
+                    <div class="d">{{ $event->event_date->format('d') }}</div>
+                    </div>
+                    <div class="timeline-content">
+                    <div class="t">{{ $event->title }}</div>
+                    <div class="sub">📍 {{ $event->location }}</div>
+                    </div>
+                </div>
+            @endforeach
 
           </div>
         </div>
