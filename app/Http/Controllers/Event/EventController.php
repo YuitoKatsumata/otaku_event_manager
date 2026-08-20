@@ -9,7 +9,6 @@ use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\EventStatus;
 
-
 class EventController extends Controller
 {
     public function create()
@@ -32,5 +31,16 @@ class EventController extends Controller
         Event::create($validatedData);
 
         return redirect()->route('home')->with('success', 'イベントが作成されました。');
+    }
+
+    public function show($id)
+    {
+        $event = Event::findOrFail($id);
+        $statuses = EventStatus::cases();
+        $limitTime = $event->event_date->diff(now());
+        if ($event->event_date < now()) {
+            $limitTime = 0;
+        }
+        return view('event.show', compact('event', 'statuses', 'limitTime'));
     }
 }
