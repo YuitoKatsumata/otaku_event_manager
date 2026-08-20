@@ -49,7 +49,7 @@ class ExampleTest extends TestCase
         $event = Event::factory()->create([
             'user_id' => $user->id,
             'title' => 'Test Event',
-            'date' => now()->addDays(10)->format('Y-m-d'),
+            'event_date' => now()->addDays(10)->format('Y-m-d'),
             'category_id' => $category->id,
             'status' => $status,
             'image_path' => null,
