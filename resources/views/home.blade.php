@@ -528,7 +528,6 @@
       <input type="text" placeholder="イベント・会場・アーティストで検索 (Cmd+K)">
     </div>
     <div class="top-actions">
-        <button class="btn btn-default">📥 CSV出力</button>
         <a href="{{ route('event.create') }}" class="btn btn-primary" style="text-decoration: none !important;">＋ イベント追加</a>
     </div>
   </header>
@@ -582,7 +581,6 @@
                     <div style="width: 100%; height: 100%; background-color: {{ $event->category->color }}; display: flex; align-items: center; justify-content: center;">
                     </div>
                 @endif
-                <button class="card-action-menu">•••</button>
             </div>
             <div class="card-body">
                 <div class="card-category">{{ $event->category->name }}</div>
@@ -593,7 +591,7 @@
                 </div>
                 <div class="card-footer">
                 <span class="badge badge-plan">{{ $event->status }}</span>
-                <button class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
+                <a href="{{ route('event.show', $event->id) }}" class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</a>
                 </div>
             </div>
             </div>

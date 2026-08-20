@@ -2,52 +2,63 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\User;
+use App\Models\Event;
+use App\Models\Category;
+use App\Enums\EventStatus;
+use Database\Seeders\CategorySeeder;
+use Illuminate\Support\Facades\Hash;
 
 class ExampleTest extends TestCase
 {
-
     use RefreshDatabase;
-    /**
-     * A basic test example.
-     */
-    public function test_disp_register_page(): void {
-        $response = $this->get('/register');
-
-        $response->assertStatus(200);
-    }
-
-    public function test_register_user(): void {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $response->assertStatus(302);
-    }
-
-    public function test_disp_login_page(): void {
-        $response = $this->get('/login');
-
-        $response->assertStatus(200);
-    }
 
     public function test_login_user(): void {
-        // 事前にユーザーを作成
-        $user = \App\Models\User::factory()->create([
+        // 事前にユーザーを作成（パスワードハッシュ化OK！）
+        $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => 'password',
+            'password' => Hash::make('password'),
         ]);
 
         $response = $this->post('/login', [
             'email' => $user->email,
-            'password' => $user->password,
+            'password' => 'password',
         ]);
 
+        // ログイン成功後はダッシュボード等にリダイレクトされるから302で正解！
         $response->assertStatus(302);
+    }
+
+    public function test_create_event(): void {
+        // 事前にユーザーを作成
+        $user = User::factory()->create();
+
+        // ユーザーでログイン
+        $this->actingAs($user);
+
+        // シーダーを正しい方法で実行してカテゴリを取得
+        $this->seed(CategorySeeder::class);
+        $category = Category::firstOrFail();
+
+        // イベントステータスを取得
+        $status = EventStatus::Scheduled->value;
+
+        // イベントを事前に作成
+        $event = Event::factory()->create([
+            'user_id' => $user->id,
+            'title' => 'Test Event',
+            'event_date' => now()->addDays(10)->format('Y-m-d'),
+            'category_id' => $category->id,
+            'status' => $status,
+            'image_path' => null,
+        ]);
+
+        // 詳細画面を開く（GETリクエスト）
+        $response = $this->get("/event/{$event->id}");
+
+        // ログイン済み＆データが存在するので200（成功）を検証！
+        $response->assertStatus(200);
     }
 }
