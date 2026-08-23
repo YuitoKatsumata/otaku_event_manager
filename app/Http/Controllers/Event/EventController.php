@@ -43,4 +43,12 @@ class EventController extends Controller
         }
         return view('event.show', compact('event', 'statuses', 'limitTime'));
     }
+
+    public function edit($id)
+    {
+        $event = Event::findOrFail($id);
+        $categories = Category::all();
+        $statuses = EventStatus::cases();
+        return view('event.edit', compact('event', 'categories', 'statuses'));
+    }
 }
