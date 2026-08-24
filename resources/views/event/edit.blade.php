@@ -415,7 +415,7 @@
 <main class="main-content">
   <header class="top-bar">
     <div class="breadcrumb">
-      <a href="{{ route('home') }}">ダッシュボード</a><span>/</span><span>新規作成</span>
+      <a href="{{ route('home') }}">ダッシュボード</a><span>/</span><span>イベント編集</span>
     </div>
     <div class="top-actions"><a href="{{ route('home') }}" class="btn btn-default">キャンセル</a></div>
   </header>
@@ -426,8 +426,9 @@
       <p>イベント情報を更新します</p>
     </div>
 
-    <form id="event-form" action="{{ route('event.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="event-form" action="{{ route('event.update', $event->id) }}" method="POST" enctype="multipart/form-data">
       @csrf
+      @method('PUT')
       <div class="form-grid">
 
         <div class="form-left">
@@ -572,8 +573,7 @@
           </div>
 
           <div class="action-box">
-            <button type="submit" class="btn btn-primary" style="width: 100%;">イベントを作成する</button>
-            <button type="button" class="btn btn-default" style="width: 100%;">下書きとして保存</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">イベントを更新する</button>
           </div>
         </div>
 

@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/event', [EventController::class, 'store'])->name('event.store');
     Route::get('event/{id}', [EventController::class, 'show'])->name('event.show');
     Route::get('event/edit/{id}', [EventController::class, 'edit'])->name('event.edit');
+    Route::put('event/{id}', [EventController::class, 'update'])->name('event.update');
 });
 
 // 未認証ユーザー向けのルート

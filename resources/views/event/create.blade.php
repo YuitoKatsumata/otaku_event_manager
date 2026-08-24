@@ -573,7 +573,6 @@
 
           <div class="action-box">
             <button type="submit" class="btn btn-primary" style="width: 100%;">イベントを作成する</button>
-            <button type="button" class="btn btn-default" style="width: 100%;">下書きとして保存</button>
           </div>
         </div>
 
