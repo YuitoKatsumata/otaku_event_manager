@@ -55,10 +55,25 @@ class ExampleTest extends TestCase
             'image_path' => null,
         ]);
 
-        // 詳細画面を開く（GETリクエスト）
-        $response = $this->get("/event/{$event->id}");
+        // 編集画面を開く（GETリクエスト）
+        $response = $this->get("/event/edit/{$event->id}");
 
-        // ログイン済み＆データが存在するので200（成功）を検証！
+        // 編集画面が正しく表示されることを確認
         $response->assertStatus(200);
+
+        // イベントの更新データを準備
+        $updateData = [
+            'title' => 'Updated Test Event',
+            'event_date' => now()->addDays(15)->format('Y-m-d'),
+            'category_id' => $category->id,
+            'status' => $status,
+            'details' => 'Updated details for the test event.',
+        ];
+
+        // イベントを更新（PUTリクエスト）
+        $response = $this->put("/event/{$event->id}", $updateData);
+
+        // 更新が成功することを確認
+        $response->assertStatus(302);
     }
 }

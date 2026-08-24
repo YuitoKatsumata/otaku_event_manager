@@ -415,19 +415,20 @@
 <main class="main-content">
   <header class="top-bar">
     <div class="breadcrumb">
-      <a href="{{ route('home') }}">ダッシュボード</a><span>/</span><span>新規作成</span>
+      <a href="{{ route('home') }}">ダッシュボード</a><span>/</span><span>イベント編集</span>
     </div>
     <div class="top-actions"><a href="{{ route('home') }}" class="btn btn-default">キャンセル</a></div>
   </header>
 
   <div class="content-container">
     <div class="page-header">
-      <h1>イベント新規登録</h1>
-      <p>新しいイベント情報を入力してリストに追加します</p>
+      <h1>イベント編集</h1>
+      <p>イベント情報を更新します</p>
     </div>
 
-    <form id="event-form" action="{{ route('event.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="event-form" action="{{ route('event.update', $event->id) }}" method="POST" enctype="multipart/form-data">
       @csrf
+      @method('PUT')
       <div class="form-grid">
 
         <div class="form-left">
@@ -450,7 +451,7 @@
               <label class="form-label" for="input-title">
                 イベント名 <span class="required-tag">必須</span>
               </label>
-              <input type="text" id="input-title" name="title" class="form-control" value="{{ old('title') }}" required>
+              <input type="text" id="input-title" name="title" class="form-control" value="{{ old('title', $event->title) }}" required>
               @error('title')
                 <p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>
               @enderror
@@ -460,7 +461,7 @@
               <label class="form-label">カテゴリ<span class="required-tag">必須</span></label>
               <div class="chip-selector">
                 @foreach ($categories as $category)
-                  <input type="radio" name="category_id" id="cat-{{ $category->id }}" value="{{ $category->id }}" class="chip-radio" data-category-name="{{ $category->name }}" data-category-color="{{ $category->color }}" {{ old('category_id') == $category->id ? 'checked' : '' }}>
+                  <input type="radio" name="category_id" id="cat-{{ $category->id }}" value="{{ $category->id }}" class="chip-radio" data-category-name="{{ $category->name }}" data-category-color="{{ $category->color }}" {{ old('category_id', $event->category_id) == $category->id ? 'checked' : '' }}>
                   <label for="cat-{{ $category->id }}" class="chip-label">{{ $category->name }}</label>
                 @endforeach
               </div>
@@ -474,14 +475,13 @@
               <label class="form-label">アイキャッチ画像</label>
 
               <div class="upload-area" id="upload-container">
-                <span class="upload-icon">🖼️</span>
                 <span class="upload-text">クリックまたは画像をドラッグ＆ドロップ</span>
                 <span class="upload-hint">PNG, JPG, WEBP (最大 5MB)</span>
                 <input type="file" name="image_path" id="file-input" accept="image/*" style="display: none;">
               </div>
 
               <div class="file-preview-info" id="file-info">
-                <span id="file-name">filename.jpg</span>
+                <span id="file-name">{{ $event->image_path ? basename($event->image_path) : 'filename.jpg' }}</span>
                 <button type="button" class="remove-file-btn" id="btn-remove-file">画像を削除</button>
               </div>
 
@@ -500,7 +500,7 @@
                 <label class="form-label" for="input-date">
                   開催日 <span class="required-tag">必須</span>
                 </label>
-                <input type="date" id="input-date" name="event_date" class="form-control" value="{{ old('event_date') }}" required>
+                <input type="date" id="input-date" name="event_date" class="form-control" value="{{ old('event_date', $event->event_date) }}" required>
                 @error('event_date')
                   <p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>
                 @enderror
@@ -510,7 +510,7 @@
                 <label class="form-label" for="input-status">ステータス</label>
                 <select id="input-status" name="status" class="form-control">
                   @foreach ($statuses as $status)
-                    <option name="status" value="{{ $status->value }}" {{ old('status') == $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
+                    <option name="status" value="{{ $status->value }}" {{ old('status', $event->status) == $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
                   @endforeach
                 </select>
                 @error('status')
@@ -521,7 +521,7 @@
 
             <div class="form-group">
               <label class="form-label" for="input-location">開催場所・会場</label>
-              <input type="text" id="input-location" name="location" class="form-control" value="{{ old('location') }}" placeholder="例: 池袋サンシャインシティ">
+              <input type="text" id="input-location" name="location" class="form-control" value="{{ old('location', $event->location) }}" placeholder="例: 池袋サンシャインシティ">
               @error('location')
                 <p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>
               @enderror
@@ -534,7 +534,7 @@
 
             <div class="form-group">
               <label class="form-label" for="input-url">関連リンク / 公式サイトURL</label>
-              <input type="url" id="input-url" name="event_url" class="form-control" value="{{ old('event_url') }}" placeholder="https://example.com">
+              <input type="url" id="input-url" name="event_url" class="form-control" value="{{ old('event_url', $event->event_url) }}" placeholder="https://example.com">
               @error('event_url')
                 <p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>
               @enderror
@@ -542,7 +542,7 @@
 
             <div class="form-group">
               <label class="form-label" for="input-memo">メモ（座席番号・持ち物など）</label>
-              <textarea id="input-memo" name="description" class="form-control" placeholder="整列時間: 10:30〜 / Aブロック 15番">{{ old('description') }}</textarea>
+              <textarea id="input-memo" name="description" class="form-control" placeholder="整列時間: 10:30〜 / Aブロック 15番">{{ old('description', $event->description) }}</textarea>
               @error('description')
                 <p style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</p>
               @enderror
@@ -558,21 +558,22 @@
           <div class="card" id="preview-card">
             <div class="card-banner no-image" id="pv-banner"></div>
             <div class="card-body">
-              <div class="card-category" id="pv-category">カテゴリ未設定</div>
-              <div class="card-title" id="pv-title">イベントタイトルを入力...</div>
+              <div class="card-category" id="pv-category">{{ $event->category->name ?? 'カテゴリ未設定' }}</div>
+              <div class="card-title" id="pv-title">{{ $event->title ?? 'イベントタイトルを入力...' }}</div>
               <div class="card-details">
-                <span id="pv-date">📅 ----/--/--</span>
-                <span id="pv-location">📍 場所未設定</span>
+                <span id="pv-date">📅 {{ $event->event_date ? $event->event_date->format('Y/m/d') : '----/--/--
+' }}</span>
+                <span id="pv-location">📍 {{ $event->location ?? '場所未設定' }}</span>
               </div>
               <div class="card-footer">
-                <span class="badge badge-plan" id="pv-status">参加予定</span>
+                <span class="badge badge-plan" id="pv-status">{{ $event->status->label() }}</span>
                 <button type="button" class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
               </div>
             </div>
           </div>
 
           <div class="action-box">
-            <button type="submit" class="btn btn-primary" style="width: 100%;">イベントを作成する</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">イベントを更新する</button>
           </div>
         </div>
 

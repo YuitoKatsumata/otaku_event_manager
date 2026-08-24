@@ -43,4 +43,27 @@ class EventController extends Controller
         }
         return view('event.show', compact('event', 'statuses', 'limitTime'));
     }
+
+    public function edit($id)
+    {
+        $event = Event::findOrFail($id);
+        $categories = Category::all();
+        $statuses = EventStatus::cases();
+        return view('event.edit', compact('event', 'categories', 'statuses'));
+    }
+
+    public function update(EventRegisterRequest $request, $id)
+    {
+        $event = Event::findOrFail($id);
+        $validatedData = $request->validated();
+
+        if ($request->hasFile('image_path')) {
+            $imagePath = $request->file('image_path')->store('event_images', 'public');
+            $validatedData['image_path'] = $imagePath;
+        }
+
+        $event->update($validatedData);
+
+        return redirect()->route('event.show', $event->id)->with('success', 'イベントが更新されました。');
+    }
 }
