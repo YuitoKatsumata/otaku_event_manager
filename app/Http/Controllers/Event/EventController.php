@@ -3,23 +3,23 @@
 namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\EventRegisterRequest;
+use App\Http\Requests\EventRequest;
 use App\Models\Category;
 use App\Models\Event;
-use Illuminate\Support\Facades\Auth;
 use App\Enums\EventStatus;
-use Psy\Readline\Hoa\Event as HoaEvent;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
     public function create()
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('sort_order', 'asc')->get();
         $statuses = EventStatus::cases();
         return view('event.create', compact('categories', 'statuses'));
     }
 
-    public function store(EventRegisterRequest $request)
+    public function store(EventRequest $request)
     {
         $validatedData = $request->validated();
 
@@ -28,46 +28,50 @@ class EventController extends Controller
             $validatedData['image_path'] = $imagePath;
         }
 
-        $validatedData['user_id'] = Auth::id();
-        Event::create($validatedData);
+        $event = Auth::user()->events()->create($validatedData);
 
-        return redirect()->route('home')->with('success', 'イベントが作成されました。');
+        return redirect()->route('home')->with('success', 'イベントを作成しました。');
     }
 
-    public function show($id)
+    public function show(Event $event)
     {
-        $event = Event::findOrFail($id);
-        $statuses = EventStatus::cases();
-        $limitTime = $event->event_date->diff(now());
-        if ($event->event_date < now()) {
-            $limitTime = 0;
-        }
-        return view('event.show', compact('event', 'statuses', 'limitTime'));
+        abort_if($event->user_id !== Auth::id(), 403);
+
+        return view('event.show', compact('event'));
     }
 
-    public function edit($id) {
-        $event = Event::findOrFail($id);
-        $categories = Category::all();
+    public function edit(Event $event)
+    {
+        abort_if($event->user_id !== Auth::id(), 403);
+
+        $categories = Category::orderBy('sort_order', 'asc')->get();
         $statuses = EventStatus::cases();
         return view('event.edit', compact('event', 'categories', 'statuses'));
     }
 
-    public function update(EventRegisterRequest $request, $id) {
-        $event = Event::findOrFail($id);
+    public function update(EventRequest $request, Event $event)
+    {
+        abort_if($event->user_id !== Auth::id(), 403);
+
         $validatedData = $request->validated();
 
         if ($request->hasFile('image_path')) {
+            if ($event->image_path) {
+                Storage::disk('public')->delete($event->image_path);
+            }
             $imagePath = $request->file('image_path')->store('event_images', 'public');
             $validatedData['image_path'] = $imagePath;
         }
 
         $event->update($validatedData);
 
-        return redirect()->route('event.show', $event->id)->with('success', 'イベントが更新されました。');
+        return redirect()->route('event.show', $event->id)->with('success', 'イベントを更新しました。');
     }
 
-    public function destroy($id) {
-        $event = Event::findOrFail($id);
+    public function destroy(Event $event)
+    {
+        abort_if($event->user_id !== Auth::id(), 403);
+
         $event->delete();
 
         return redirect()->route('home')->with('success', 'イベントを削除しました。');

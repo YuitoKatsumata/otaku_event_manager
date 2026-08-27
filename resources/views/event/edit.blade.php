@@ -511,7 +511,7 @@
                 <label class="form-label" for="input-status">ステータス</label>
                 <select id="input-status" name="status" class="form-control">
                   @foreach ($statuses as $status)
-                    <option name="status" value="{{ $status->value }}" {{ $event->status == $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
+                    <option value="{{ $status->value }}" {{ (old('status') ?? $event->status->value) === $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
                   @endforeach
                 </select>
                 @error('status')
@@ -566,7 +566,7 @@
                 <span id="pv-location">📍 {{ $event->location ?? '場所未設定' }}</span>
               </div>
               <div class="card-footer">
-                <span class="badge badge-plan" id="pv-status">{{ $event->status->label() }}</span>
+                <span class="badge {{ $event->status->badgeClass() }}" id="pv-status">{{ $event->status->label() }}</span>
                 <button type="button" class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</button>
               </div>
             </div>
@@ -632,15 +632,15 @@
     inputStatus.addEventListener('change', (e) => {
         const val = e.target.value;
         pvStatus.className = 'badge ';
-        if (val === '参加予定') {
-        pvStatus.classList.add('badge-plan');
-        pvStatus.textContent = '参加予定';
-        } else if (val === '参加済み') {
-        pvStatus.classList.add('badge-done');
-        pvStatus.textContent = '参加済み';
+        if (val === 'scheduled') {
+            pvStatus.classList.add('badge-plan');
+            pvStatus.textContent = '参加予定';
+        } else if (val === 'completed') {
+            pvStatus.classList.add('badge-done');
+            pvStatus.textContent = '参加済み';
         } else {
-        pvStatus.classList.add('badge-wish');
-        pvStatus.textContent = 'キャンセル';
+            pvStatus.classList.add('badge-wish');
+            pvStatus.textContent = 'キャンセル';
         }
     });
 

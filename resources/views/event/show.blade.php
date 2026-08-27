@@ -85,6 +85,14 @@
 
     <!-- CONTENT CONTAINER -->
     <div class="p-6 md:p-7 max-w-[1200px] mx-auto w-full">
+
+      @if (session('success'))
+        <div class="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg p-4 mb-6 text-xs font-medium flex items-center gap-2">
+          <span>✓</span>
+          <span>{{ session('success') }}</span>
+        </div>
+      @endif
+
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-7 items-start">
 
         <!-- MAIN LEFT CONTENT -->
@@ -151,7 +159,7 @@
           <div class="bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-lg p-5 text-center">
             <div class="text-xs font-semibold opacity-90 mb-1">開催まであと</div>
             <div class="text-4xl font-extrabold tracking-tight leading-none mb-1">
-              {{ $limitTime ? $limitTime->days : 0 }}
+              {{ $event->days_remaining }}
               <span class="text-base font-semibold ml-0.5">日</span>
             </div>
           </div>
