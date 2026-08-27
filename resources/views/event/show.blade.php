@@ -1,172 +1,291 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eventify - イベント詳細</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'Noto Sans JP', '-apple-system', 'sans-serif'],
-          },
-          colors: {
-            sky: {
-              50: '#F0F9FF',
-              100: '#E0F2FE',
-              500: '#0284C7',
-              600: '#0369A1',
-              700: '#075985',
-            },
-            neutral: {
-              50: '#F8FAFC',
-              100: '#F1F5F9',
-              200: '#E2E8F0',
-              300: '#CBD5E1',
-              600: '#475569',
-              700: '#334155',
-              900: '#0F172A',
-            }
-          }
-        }
-      }
+@extends('layouts.app')
+
+@section('title', 'Eventify - ' . $event->title)
+
+@push('styles')
+<style>
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .hero-banner {
+    width: 100%;
+    height: 260px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 24px;
+    border: 1px solid var(--neutral-200);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .hero-category-tag {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(4px);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .detail-card {
+    background: #FFFFFF;
+    border: 1px solid var(--neutral-200);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .detail-header {
+    border-bottom: 1px solid var(--neutral-100);
+    padding-bottom: 18px;
+    margin-bottom: 20px;
+  }
+
+  .detail-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 14px;
+    color: var(--neutral-900);
+    word-break: break-word;
+  }
+
+  .info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--neutral-700);
+  }
+
+  .info-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--neutral-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .section-block {
+    margin-top: 20px;
+  }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--neutral-900);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .memo-box {
+    background: var(--neutral-50);
+    border: 1px solid var(--neutral-200);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--neutral-700);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .link-anchor {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--sky-500);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .link-anchor:hover {
+    text-decoration: underline;
+  }
+
+  /* Countdown Widget */
+  .countdown-card {
+    background: linear-gradient(135deg, var(--sky-500) 0%, var(--sky-700) 100%);
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+  }
+
+  .countdown-label {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.9;
+    margin-bottom: 6px;
+  }
+
+  .countdown-number {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+
+  .countdown-unit {
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 2px;
+  }
+
+  .countdown-sub {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-top: 6px;
+  }
+
+  .side-panel {
+    position: sticky;
+    top: 84px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  @media (max-width: 900px) {
+    .detail-grid {
+      grid-template-columns: 1fr;
     }
-  </script>
-</head>
-<body class="bg-neutral-50 text-neutral-900 font-sans min-h-screen flex antialiased">
+    .side-panel {
+      position: static;
+    }
+  }
+</style>
+@endpush
 
-  <!-- SIDEBAR -->
-  <aside class="w-[240px] bg-white border-r border-neutral-200 flex flex-col fixed top-0 bottom-0 left-0 z-50">
-    <div class="h-[60px] px-5 flex items-center border-b border-neutral-200">
-      <div class="text-lg font-bold text-sky-500 tracking-tight">Event<span class="text-neutral-900">ify</span></div>
-    </div>
+@section('topbar')
+<header class="top-bar">
+  <div class="breadcrumb">
+    <a href="{{ route('home') }}">ダッシュボード</a>
+    <span>/</span>
+    <span>{{ Str::limit($event->title, 20) }}</span>
+  </div>
+  <div class="top-actions">
+    <a href="{{ route('event.edit', $event->id) }}" class="btn btn-default">✏️ 編集</a>
+    <form action="{{ route('event.destroy', $event->id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('本当にこのイベントを削除しますか？\n削除すると復元できません。');">
+      @csrf
+      @method('DELETE')
+      <button type="submit" class="btn btn-danger">🗑️ 削除</button>
+    </form>
+  </div>
+</header>
+@endsection
 
-    <div class="p-3 flex flex-col gap-1">
-      <div class="text-[11px] font-bold text-neutral-600 uppercase tracking-wider px-2 pb-1.5">メイン</div>
-      <a href="{{ route('home') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-neutral-600 text-xs font-medium hover:bg-neutral-100 hover:text-neutral-900 transition-all">ダッシュボード</a>
-      <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-neutral-600 text-xs font-medium hover:bg-neutral-100 hover:text-neutral-900 transition-all">イベント一覧</a>
-      <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-neutral-600 text-xs font-medium hover:bg-neutral-100 hover:text-neutral-900 transition-all">カレンダー</a>
-      <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-neutral-600 text-xs font-medium hover:bg-neutral-100 hover:text-neutral-900 transition-all">ウィッシュリスト</a>
-    </div>
+@section('content')
+<div class="detail-grid">
 
-    <div class="mt-auto p-4 border-t border-neutral-200 flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-xs font-bold text-sky-500">N</div>
-      <div class="flex flex-col overflow-hidden">
-        <div class="text-xs font-semibold">ノゾミ</div>
-        <div class="text-[11px] text-neutral-600">Pro プラン</div>
+  <!-- LEFT: MAIN CONTENT -->
+  <div class="detail-main">
+
+    <!-- HERO BANNER -->
+    @if ($event->image_path)
+      <div class="hero-banner" style="background-image: url('{{ asset('storage/' . $event->image_path) }}');">
+        <span class="hero-category-tag">{{ $event->category->name ?? 'カテゴリ未設定' }}</span>
       </div>
-    </div>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="ml-[240px] flex-1 flex flex-col min-w-0">
-
-    <!-- TOP BAR -->
-    <header class="h-[60px] bg-white border-b border-neutral-200 px-7 flex items-center justify-between sticky top-0 z-40">
-      <div class="text-xs text-neutral-600 flex items-center gap-1.5">
-        <a href="#" class="hover:text-neutral-900">イベント一覧</a>
-        <span>/</span>
-        <span class="text-neutral-900 font-semibold">詳細</span>
+    @else
+      <div class="hero-banner" style="background-color: {{ $event->category->color ?? '#E2E8F0' }}; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 48px; opacity: 0.8;">✨</span>
+        <span class="hero-category-tag">{{ $event->category->name ?? 'カテゴリ未設定' }}</span>
       </div>
-      <div class="flex gap-2">
-        <a href="{{ route('event.edit', $event->id) }}" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md text-xs font-semibold border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100 transition-all">編集</a>
-        <form action="{{ route('event.destroy', $event->id) }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md text-xs font-semibold border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 transition-all" onclick="return confirm('本当に削除しますか？')">削除</button>
-        </form>
+    @endif
+
+    <!-- DETAIL CARD -->
+    <div class="detail-card">
+      <div class="detail-header">
+        <div style="margin-bottom: 8px;">
+          <span class="badge {{ $event->status->badgeClass() }}">{{ $event->status->label() }}</span>
+        </div>
+        <h1 class="detail-title">{{ $event->title }}</h1>
+
+        <div class="info-list">
+          <div class="info-item">
+            <div class="info-icon-box">📅</div>
+            <div>
+              <strong>開催日:</strong> {{ $event->event_date ? $event->event_date->format('Y年m月d日') . ' (' . $event->event_date->format('D') . ')' : '未定' }}
+            </div>
+          </div>
+          @if ($event->location)
+            <div class="info-item">
+              <div class="info-icon-box">📍</div>
+              <div>
+                <strong>会場:</strong> {{ $event->location }}
+              </div>
+            </div>
+          @endif
+        </div>
       </div>
-    </header>
 
-    <!-- CONTENT CONTAINER -->
-    <div class="p-6 md:p-7 max-w-[1200px] mx-auto w-full">
-
-      @if (session('success'))
-        <div class="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg p-4 mb-6 text-xs font-medium flex items-center gap-2">
-          <span>✓</span>
-          <span>{{ session('success') }}</span>
+      <!-- 関連リンク -->
+      @if ($event->event_url)
+        <div class="section-block">
+          <div class="section-label">🔗 公式サイト / 関連リンク</div>
+          <a href="{{ $event->event_url }}" target="_blank" rel="noopener noreferrer" class="link-anchor">
+            {{ $event->event_url }} ↗
+          </a>
         </div>
       @endif
 
-      <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-7 items-start">
-
-        <!-- MAIN LEFT CONTENT -->
-        <div class="min-w-0">
-
-          <!-- HERO BANNER -->
-          @if ($event->image_path)
-            <div class="w-full h-60 rounded-xl overflow-hidden relative mb-6 border border-neutral-200">
-              <img src="{{ asset('storage/' . $event->image_path) }}" alt="Event Banner" class="w-full h-full object-cover">
-              <span class="absolute top-4 left-4 bg-slate-900/75 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase">
-                  {{ $event->category->name }}
-              </span>
-            </div>
-          @else
-            <div class="w-full h-60 rounded-xl overflow-hidden relative mb-6 border border-neutral-200" style="background-color: {{ $event->category->color }};">
-                <span class="absolute top-4 left-4 bg-slate-900/75 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase">
-                    {{ $event->category->name }}
-                </span>
-            </div>
-          @endif
-
-          <!-- EVENT DETAIL CARD -->
-          <div class="bg-white border border-neutral-200 rounded-lg p-6 mb-5">
-            <div class="mb-5 pb-4 border-b border-neutral-100">
-              <h1 class="text-2xl font-bold text-neutral-900 leading-snug mb-3">
-                {{ $event->title }}
-              </h1>
-
-              <div class="flex flex-col gap-3">
-                <div class="flex items-center gap-3 text-sm text-neutral-700">
-                  <div class="w-8 h-8 rounded-md bg-neutral-100 flex items-center justify-center text-base shrink-0">📅</div>
-                  <div>{{ $event->event_date->format('Y/m/d') }} ({{ $event->event_date->format('D') }})</div>
-                </div>
-                <div class="flex items-center gap-3 text-sm text-neutral-700">
-                  <div class="w-8 h-8 rounded-md bg-neutral-100 flex items-center justify-center text-base shrink-0">📍</div>
-                  <div>{{ $event->location }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- LINK -->
-            <div class="mb-5">
-              <div class="text-xs font-bold text-neutral-900 mb-2 flex items-center gap-1.5">🔗 関連リンク</div>
-              <a href="{{ $event->event_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-sky-500 text-xs font-semibold hover:underline break-all">
-                {{ $event->event_url }} ↗
-              </a>
-            </div>
-
-            <!-- MEMO -->
-            <div>
-              <div class="text-xs font-bold text-neutral-900 mb-2 flex items-center gap-1.5">📝 メモ</div>
-              <div class="bg-neutral-50 border border-neutral-200 rounded-md p-3.5 text-xs leading-relaxed text-neutral-700 whitespace-pre-wrap">
-                {{ $event->description }}
-              </div>
-            </div>
-          </div>
-
+      <!-- メモ -->
+      @if ($event->description)
+        <div class="section-block">
+          <div class="section-label">📝 メモ・持ち物・座席情報</div>
+          <div class="memo-box">{{ $event->description }}</div>
         </div>
+      @endif
+    </div>
 
-        <!-- RIGHT SIDE PANEL -->
-        <div class="lg:sticky lg:top-[84px] flex flex-col gap-5">
+  </div>
 
-          <!-- COUNTDOWN WIDGET -->
-          <div class="bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-lg p-5 text-center">
-            <div class="text-xs font-semibold opacity-90 mb-1">開催まであと</div>
-            <div class="text-4xl font-extrabold tracking-tight leading-none mb-1">
-              {{ $event->days_remaining }}
-              <span class="text-base font-semibold ml-0.5">日</span>
-            </div>
-          </div>
-        </div>
+  <!-- RIGHT: SIDE PANEL (COUNTDOWN WIDGET) -->
+  <div class="side-panel">
+    <div class="countdown-card">
+      <div class="countdown-label">開催まであと</div>
+      <div class="countdown-number">
+        {{ $event->days_remaining }}<span class="countdown-unit">日</span>
+      </div>
+      <div class="countdown-sub">
+        {{ $event->event_date ? $event->event_date->format('Y/m/d') : '' }}
       </div>
     </div>
-  </main>
 
-</body>
-</html>
+    <div class="detail-card" style="padding: 16px;">
+      <div style="font-size: 12px; font-weight: 700; color: var(--neutral-600); margin-bottom: 10px;">クイックアクション</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <a href="{{ route('event.edit', $event->id) }}" class="btn btn-default" style="width: 100%;">イベント情報を編集</a>
+        <a href="{{ route('home') }}" class="btn btn-default" style="width: 100%;">← ダッシュボードに戻る</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+@endsection
