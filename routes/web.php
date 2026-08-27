@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::get('event/{id}', [EventController::class, 'show'])->name('event.show');
     Route::get('event/edit/{id}', [EventController::class, 'edit'])->name('event.edit');
     Route::put('event/update/{id}', [EventController::class, 'update'])->name('event.update');
+    Route::delete('event/{id}', [EventController::class, 'destroy'])->name('event.destroy');
 });
 
 // 未認証ユーザー向けのルート

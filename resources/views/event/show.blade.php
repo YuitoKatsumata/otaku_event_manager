@@ -74,8 +74,12 @@
         <span class="text-neutral-900 font-semibold">詳細</span>
       </div>
       <div class="flex gap-2">
-        <a href="{{ route('event.edit', $event->id)}}" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md text-xs font-semibold border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100 transition-all">編集</a>
-        <button type="button" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md text-xs font-semibold border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 transition-all">削除</button>
+        <a href="{{ route('event.edit', $event->id) }}" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md text-xs font-semibold border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100 transition-all">編集</a>
+        <form action="{{ route('event.destroy', $event->id) }}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md text-xs font-semibold border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 transition-all" onclick="return confirm('本当に削除しますか？')">削除</button>
+        </form>
       </div>
     </header>
 
