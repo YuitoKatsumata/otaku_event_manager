@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\EventStatus;
+use Psy\Readline\Hoa\Event as HoaEvent;
 
 class EventController extends Controller
 {
@@ -63,5 +64,12 @@ class EventController extends Controller
         $event->update($validatedData);
 
         return redirect()->route('event.show', $event->id)->with('success', 'イベントが更新されました。');
+    }
+
+    public function destroy($id) {
+        $event = Event::findOrFail($id);
+        $event->delete();
+
+        return redirect()->route('home')->with('success', 'イベントを削除しました。');
     }
 }
