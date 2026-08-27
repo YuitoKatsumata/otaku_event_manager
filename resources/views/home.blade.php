@@ -430,6 +430,7 @@
     }
     .badge-plan { background: #FEF3C7; color: #B45309; }
     .badge-done { background: #DCFCE7; color: #15803D; }
+    .badge-wish { background: var(--neutral-100); color: var(--neutral-600); }
 
     /* Timeline Widget */
     .widget {
@@ -535,6 +536,13 @@
   <!-- Dashboard Content -->
   <div class="content-container">
 
+    @if (session('success'))
+      <div style="background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+        <span>✓</span>
+        <span>{{ session('success') }}</span>
+      </div>
+    @endif
+
     <div class="page-header">
       <h1>イベント管理</h1>
       <p>参加予定および過去ログを一括管理・分析できます</p>
@@ -590,7 +598,7 @@
                 <span>📍 {{ $event->location }}</span>
                 </div>
                 <div class="card-footer">
-                <span class="badge badge-plan">{{ $event->status }}</span>
+                <span class="badge {{ $event->status->badgeClass() }}">{{ $event->status->label() }}</span>
                 <a href="{{ route('event.show', $event->id) }}" class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</a>
                 </div>
             </div>

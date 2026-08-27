@@ -510,7 +510,7 @@
                 <label class="form-label" for="input-status">ステータス</label>
                 <select id="input-status" name="status" class="form-control">
                   @foreach ($statuses as $status)
-                    <option name="status" value="{{ $status->value }}" {{ old('status') == $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
+                    <option value="{{ $status->value }}" {{ old('status') == $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
                   @endforeach
                 </select>
                 @error('status')
@@ -632,15 +632,15 @@
     inputStatus.addEventListener('change', (e) => {
         const val = e.target.value;
         pvStatus.className = 'badge ';
-        if (val === '参加予定') {
-        pvStatus.classList.add('badge-plan');
-        pvStatus.textContent = '参加予定';
-        } else if (val === '参加済み') {
-        pvStatus.classList.add('badge-done');
-        pvStatus.textContent = '参加済み';
+        if (val === 'scheduled') {
+            pvStatus.classList.add('badge-plan');
+            pvStatus.textContent = '参加予定';
+        } else if (val === 'completed') {
+            pvStatus.classList.add('badge-done');
+            pvStatus.textContent = '参加済み';
         } else {
-        pvStatus.classList.add('badge-wish');
-        pvStatus.textContent = 'キャンセル';
+            pvStatus.classList.add('badge-wish');
+            pvStatus.textContent = 'キャンセル';
         }
     });
 

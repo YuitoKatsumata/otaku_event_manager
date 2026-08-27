@@ -55,8 +55,8 @@ class ExampleTest extends TestCase
             'image_path' => null,
         ]);
 
-        // 詳細画面を開く（GETリクエスト）
-        $response = $this->get("/event/edit/{$event->id}");
+        // 編集画面を開く（GETリクエスト）
+        $response = $this->get(route('event.edit', $event->id));
 
         // ログイン済み＆データが存在するので200（成功）を検証！
         $response->assertStatus(200);
@@ -71,6 +71,7 @@ class ExampleTest extends TestCase
             'image_path' => null,
         ];
 
-        $event->update($updateData);
+        $updateResponse = $this->put(route('event.update', $event->id), $updateData);
+        $updateResponse->assertRedirect(route('event.show', $event->id));
     }
 }

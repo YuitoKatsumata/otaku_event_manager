@@ -18,12 +18,8 @@ Route::middleware('auth')->group(function () {
     // ログアウト
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    Route::get('/event', [EventController::class, 'create'])->name('event.create');
-    Route::post('/event', [EventController::class, 'store'])->name('event.store');
-    Route::get('event/{id}', [EventController::class, 'show'])->name('event.show');
-    Route::get('event/edit/{id}', [EventController::class, 'edit'])->name('event.edit');
-    Route::put('event/update/{id}', [EventController::class, 'update'])->name('event.update');
-    Route::delete('event/{id}', [EventController::class, 'destroy'])->name('event.destroy');
+    // イベント管理
+    Route::resource('events', EventController::class)->except(['index'])->names('event');
 });
 
 // 未認証ユーザー向けのルート

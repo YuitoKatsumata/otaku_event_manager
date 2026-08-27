@@ -13,20 +13,27 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // イベントデータを取得
-        $events = Event::with('category', 'user')
+        $user = Auth::user();
+
+        // ログインユーザーのイベントデータを取得
+        $events = $user->events()
+            ->with('category')
             ->orderBy('event_date', 'asc')
             ->limit(6)
             ->get();
 
-        // カテゴリと各ステータスの件数を取得
-        $categories = Category::all();
-        $completedCount = Event::where('status', EventStatus::Completed->value)->count();
-        $scheduledCount = Event::where('status', EventStatus::Scheduled->value)->count();
-        // 今月のイベントの件数を取得
+        // カテゴリ一覧を取得
+        $categories = Category::orderBy('sort_order', 'asc')->get();
+
+        // ログインユーザーの各ステータス件数を取得（新旧両方の値に対応）
+        $completedCount = $user->events()->whereIn('status', [EventStatus::Completed->value, '参加済み'])->count();
+        $scheduledCount = $user->events()->whereIn('status', [EventStatus::Scheduled->value, '参加予定'])->count();
+
+        // ログインユーザーの今月のイベント件数を取得
         $currentMonth = now()->month;
         $currentYear = now()->year;
-        $monthlyCount = Event::whereYear('event_date', $currentYear)
+        $monthlyCount = $user->events()
+            ->whereYear('event_date', $currentYear)
             ->whereMonth('event_date', $currentMonth)
             ->count();
 
