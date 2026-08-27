@@ -1,640 +1,431 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eventify - ワークスペース</title>
-  <!-- Google Fonts: 欧文(Inter) × 和文(Noto Sans JP) のプロ仕様ペアリング -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+@extends('layouts.app')
 
-  <style>
-    :root {
-      /* カラーシステム：空色（Sky）ベースをSaaS用にトーンダウン＆調整 */
-      --sky-50: #F0F9FF;
-      --sky-100: #E0F2FE;
-      --sky-500: #0284C7;
-      --sky-600: #0369A1;
-      --sky-700: #075985;
+@section('title', 'Eventify - ダッシュボード')
 
-      --neutral-50: #F8FAFC;
-      --neutral-100: #F1F5F9;
-      --neutral-200: #E2E8F0;
-      --neutral-300: #CBD5E1;
-      --neutral-600: #475569;
-      --neutral-700: #334155;
-      --neutral-900: #0F172A;
+@push('styles')
+<style>
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
 
-      --sidebar-width: 240px;
-    }
+  .kpi-card {
+    background: #FFFFFF;
+    border: 1px solid var(--neutral-200);
+    border-radius: 8px;
+    padding: 16px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
 
-    body {
-      /* 💡 欧文フォント(Inter)を優先指定！数字や英語が劇的にキレイになるよ */
-      font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
-      background-color: var(--neutral-50);
-      color: var(--neutral-900);
-      min-height: 100vh;
-      display: flex;
-      -webkit-font-smoothing: antialiased;
-    }
+  .kpi-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--neutral-600);
+  }
 
-    /* --------------------------------------------------
-       1. SIDEBAR (App Navigation)
-    -------------------------------------------------- */
-    aside.sidebar {
-      width: var(--sidebar-width);
-      background: #FFFFFF;
-      border-right: 1px solid var(--neutral-200);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      top: 0; bottom: 0; left: 0;
-      z-index: 50;
-    }
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 4px;
+    letter-spacing: -0.5px;
+    color: var(--neutral-900);
+  }
 
-    .sidebar-header {
-      height: 60px;
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid var(--neutral-200);
-    }
+  /* Toolbar & Filters */
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
 
-    .logo {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--sky-500);
-      letter-spacing: -0.5px;
-    }
-    .logo span { color: var(--neutral-900); }
+  .filter-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
 
-    .nav-group {
-      padding: 16px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    background: #FFFFFF;
+    border: 1px solid var(--neutral-200);
+    color: var(--neutral-600);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
 
-    .nav-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--neutral-600);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 0 8px 6px;
-    }
+  .chip.active {
+    background: var(--sky-50);
+    border-color: var(--sky-500);
+    color: var(--sky-500);
+    font-weight: 600;
+  }
 
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      color: var(--neutral-600);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      transition: all 0.15s ease;
-    }
+  .chip:hover:not(.active) {
+    border-color: var(--neutral-300);
+    color: var(--neutral-900);
+  }
 
-    .nav-item:hover {
-      background: var(--neutral-100);
-      color: var(--neutral-900);
-    }
+  /* Main Grid */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    align-items: start;
+  }
 
-    .nav-item.active {
-      background: var(--sky-50);
-      color: var(--sky-500);
-      font-weight: 600;
-    }
+  /* Event Cards Grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
 
-    .sidebar-footer {
-      margin-top: auto;
-      padding: 16px;
-      border-top: 1px solid var(--neutral-200);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+  .card {
+    background: #FFFFFF;
+    border: 1px solid var(--neutral-200);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
 
-    .avatar {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--sky-100);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; color: var(--sky-500);
-    }
+  .card:hover {
+    border-color: var(--neutral-300);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+  }
 
-    .user-info {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+  .card-banner {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
 
-    .user-name { font-size: 13px; font-weight: 600; }
-    .user-plan { font-size: 11px; color: var(--neutral-600); }
+  .card-body {
+    padding: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
 
-    /* --------------------------------------------------
-       2. MAIN LAYOUT & HEADER
-    -------------------------------------------------- */
-    main.main-content {
-      margin-left: var(--sidebar-width);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
+  .card-category {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--sky-500);
+    margin-bottom: 4px;
+  }
 
-    header.top-bar {
-      height: 60px;
-      background: #FFFFFF;
-      border-bottom: 1px solid var(--neutral-200);
-      padding: 0 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 40;
-    }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 10px;
+    color: var(--neutral-900);
+  }
 
-    .search-box {
-      position: relative;
-      width: 320px;
-    }
+  .card-details {
+    font-size: 12px;
+    color: var(--neutral-600);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
 
-    .search-box input {
-      width: 100%;
-      padding: 7px 12px 7px 32px;
-      border: 1px solid var(--neutral-200);
-      border-radius: 6px;
-      font-size: 13px;
-      background: var(--neutral-50);
-      outline: none;
-      transition: all 0.15s;
-      font-family: inherit;
-    }
+  .card-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--neutral-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-    .search-box input:focus {
-      border-color: var(--sky-500);
-      background: #FFFFFF;
-      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
-    }
+  /* Timeline Widget */
+  .widget {
+    background: #FFFFFF;
+    border: 1px solid var(--neutral-200);
+    border-radius: 8px;
+    padding: 16px;
+    position: sticky;
+    top: 84px;
+  }
 
-    .search-box::before {
-      content: "🔍";
-      position: absolute;
-      left: 10px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 12px;
-      opacity: 0.5;
-    }
+  .widget-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-    /* ボタン共通パーツ */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.15s ease;
-      font-family: inherit;
-    }
+  .timeline-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--neutral-100);
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.15s;
+  }
+  .timeline-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .timeline-item:hover {
+    opacity: 0.8;
+  }
 
-    .btn-default {
-      background: #FFFFFF;
-      border-color: var(--neutral-200);
-      color: var(--neutral-900);
-    }
-    .btn-default:hover { background: var(--neutral-100); }
+  .date-badge {
+    background: var(--neutral-50);
+    border: 1px solid var(--neutral-200);
+    border-radius: 6px;
+    padding: 4px 8px;
+    text-align: center;
+    min-width: 44px;
+    flex-shrink: 0;
+  }
 
-    .btn-primary {
-      background: var(--sky-500);
-      color: white;
-    }
-    .btn-primary:hover { background: var(--sky-600); }
+  .date-badge .m { font-size: 9px; font-weight: 700; color: var(--neutral-600); text-transform: uppercase; }
+  .date-badge .d { font-size: 15px; font-weight: 700; color: var(--neutral-900); line-height: 1; }
 
-    /* --------------------------------------------------
-       3. DASHBOARD CONTENT AREA
-    -------------------------------------------------- */
-    .content-container {
-      padding: 24px 28px;
-      max-width: 1400px;
-      margin: 0 auto;
-      width: 100%;
-    }
+  .timeline-content { font-size: 12px; min-width: 0; }
+  .timeline-content .t { font-weight: 600; color: var(--neutral-900); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .timeline-content .sub { color: var(--neutral-600); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .page-header {
-      margin-bottom: 20px;
-    }
+  /* 空状態（Empty State） */
+  .empty-state {
+    background: #FFFFFF;
+    border: 1px dashed var(--neutral-300);
+    border-radius: 8px;
+    padding: 48px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .empty-state-icon { font-size: 40px; }
+  .empty-state-title { font-size: 16px; font-weight: 700; color: var(--neutral-800); }
+  .empty-state-desc { font-size: 13px; color: var(--neutral-600); max-width: 400px; }
 
-    .page-header h1 {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-
-    .page-header p {
-      font-size: 12px;
-      color: var(--neutral-600);
-      margin-top: 2px;
-    }
-
-    /* KPI Cards */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .kpi-card {
-      background: #FFFFFF;
-      border: 1px solid var(--neutral-200);
-      border-radius: 8px;
-      padding: 16px;
-    }
-
-    .kpi-title {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--neutral-600);
-    }
-
-    .kpi-value {
-      font-size: 24px;
-      font-weight: 700;
-      margin-top: 4px;
-      letter-spacing: -0.5px;
-    }
-
-    /* Toolbar & Filters */
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      gap: 12px;
-    }
-
-    .filter-group {
-      display: flex;
-      gap: 6px;
-    }
-
-    .chip {
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      background: #FFFFFF;
-      border: 1px solid var(--neutral-200);
-      color: var(--neutral-600);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .chip.active {
-      background: var(--sky-50);
-      border-color: var(--sky-500);
-      color: var(--sky-500);
-      font-weight: 600;
-    }
-
-    .chip:hover:not(.active) {
-      border-color: var(--neutral-300);
-      color: var(--neutral-900);
-    }
-
-    /* --------------------------------------------------
-       4. MAIN GRID & CONTENT
-    -------------------------------------------------- */
+  @media (max-width: 900px) {
     .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 24px;
+      grid-template-columns: 1fr;
     }
-
-    /* Event Cards Grid */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      background: #FFFFFF;
-      border: 1px solid var(--neutral-200);
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .card:hover {
-      border-color: var(--neutral-300);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    }
-
-    .card-banner {
-      height: 90px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      position: relative;
-    }
-
-    .card-banner.anime { background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%); }
-    .card-banner.live  { background: linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%); }
-    .card-banner.music { background: linear-gradient(135deg, #EDE9FE 0%, #C4B5FD 100%); }
-    .card-banner.game  { background: linear-gradient(135deg, #DCFCE7 0%, #86EFAC 100%); }
-
-    .card-action-menu {
-      position: absolute;
-      top: 8px; right: 8px;
-      background: rgba(255,255,255,0.85);
-      border: none;
-      width: 26px; height: 26px;
-      border-radius: 4px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px;
-      color: var(--neutral-700);
-      transition: background 0.15s;
-    }
-
-    .card-action-menu:hover { background: #FFFFFF; }
-
-    .card-body {
-      padding: 14px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-category {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: var(--sky-500);
-      margin-bottom: 4px;
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.3;
-      margin-bottom: 10px;
-    }
-
-    .card-details {
-      font-size: 12px;
-      color: var(--neutral-600);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 14px;
-    }
-
-    .card-footer {
-      margin-top: auto;
-      padding-top: 10px;
-      border-top: 1px solid var(--neutral-200);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    /* Badges */
-    .badge {
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .badge-plan { background: #FEF3C7; color: #B45309; }
-    .badge-done { background: #DCFCE7; color: #15803D; }
-    .badge-wish { background: var(--neutral-100); color: var(--neutral-600); }
-
-    /* Timeline Widget */
     .widget {
-      background: #FFFFFF;
-      border: 1px solid var(--neutral-200);
-      border-radius: 8px;
-      padding: 16px;
+      position: static;
     }
+  }
+</style>
+@endpush
 
-    .widget-title {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .widget-title a {
-      font-size: 11px;
-      color: var(--sky-500);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .timeline-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .timeline-item {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-
-    .date-badge {
-      background: var(--neutral-50);
-      border: 1px solid var(--neutral-200);
-      border-radius: 6px;
-      padding: 4px 8px;
-      text-align: center;
-      min-width: 44px;
-    }
-
-    .date-badge .m { font-size: 9px; font-weight: 700; color: var(--neutral-600); text-transform: uppercase; }
-    .date-badge .d { font-size: 15px; font-weight: 700; color: var(--neutral-900); line-height: 1; }
-
-    .timeline-content {
-      font-size: 12px;
-    }
-
-    .timeline-content .t { font-weight: 600; color: var(--neutral-900); margin-bottom: 2px; }
-    .timeline-content .sub { color: var(--neutral-600); font-size: 11px; }
-
-  </style>
-</head>
-<body>
-
-<!-- SIDEBAR NAVIGATION -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="logo">Event<span>ify</span></div>
+@section('topbar')
+<header class="top-bar">
+  <div class="search-box">
+    <input type="text" id="event-search-input" placeholder="イベント名・会場で検索 (Cmd+K)">
   </div>
-
-  <div class="nav-group">
-    <div class="nav-label">メイン</div>
-    <a href="#" class="nav-item active">ダッシュボード</a>
-    <a href="#" class="nav-item">イベント一覧</a>
-    <a href="#" class="nav-item">カレンダー</a>
-    <a href="#" class="nav-item">ウィッシュリスト</a>
+  <div class="top-actions">
+    <a href="{{ route('event.create') }}" class="btn btn-primary">＋ イベント追加</a>
   </div>
+</header>
+@endsection
 
-  <div class="nav-group">
-    <div class="nav-label">管理・分析</div>
-    <a href="#" class="nav-item">参加レポート</a>
-    <a href="#" class="nav-item">カテゴリ設定</a>
-    <a href="#" class="nav-item">アカウント設定</a>
+@section('content')
+<div class="page-header">
+  <h1>イベント管理</h1>
+  <p>参加予定および過去ログを一括管理・分析できます</p>
+</div>
+
+<!-- KPI Metrics -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-title">参加済み（累計）</div>
+    <div class="kpi-value">{{ $completedCount }}</div>
   </div>
-
-  <div class="sidebar-footer">
-    <div class="avatar">デ</div>
-    <div class="user-info">
-      <div class="user-name">{{ auth()->user()->name }}</div>
-    </div>
+  <div class="kpi-card">
+    <div class="kpi-title">参加予定</div>
+    <div class="kpi-value">{{ $scheduledCount }}</div>
   </div>
-</aside>
+  <div class="kpi-card">
+    <div class="kpi-title">今月のイベント</div>
+    <div class="kpi-value">{{ $monthlyCount }}</div>
+  </div>
+</div>
 
-<!-- MAIN CONTENT -->
-<main class="main-content">
+<!-- Controls & Filter -->
+<div class="toolbar">
+  <div class="filter-group" id="category-filter-group">
+    <div class="chip active" data-category-id="all">すべて ({{ $events->count() }})</div>
+    @foreach ($categories as $category)
+      <div class="chip" data-category-id="{{ $category->id }}">{{ $category->name }}</div>
+    @endforeach
+  </div>
+</div>
 
-  <!-- Top Bar -->
-  <header class="top-bar">
-    <div class="search-box">
-      <input type="text" placeholder="イベント・会場・アーティストで検索 (Cmd+K)">
-    </div>
-    <div class="top-actions">
-        <a href="{{ route('event.create') }}" class="btn btn-primary" style="text-decoration: none !important;">＋ イベント追加</a>
-    </div>
-  </header>
+<!-- Main Section Split -->
+<div class="dashboard-grid">
 
-  <!-- Dashboard Content -->
-  <div class="content-container">
-
-    @if (session('success'))
-      <div style="background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
-        <span>✓</span>
-        <span>{{ session('success') }}</span>
-      </div>
-    @endif
-
-    <div class="page-header">
-      <h1>イベント管理</h1>
-      <p>参加予定および過去ログを一括管理・分析できます</p>
-    </div>
-
-    <!-- KPI Metrics -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-title">参加済み（累計）</div>
-        <div class="kpi-value">{{ $completedCount }}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">参加予定</div>
-        <div class="kpi-value">{{ $scheduledCount }}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">今月のイベント</div>
-        <div class="kpi-value">{{ $monthlyCount }}</div>
-      </div>
-    </div>
-
-    <!-- Controls & Filter -->
-    <div class="toolbar">
-      <div class="filter-group">
-        <div class="chip active">すべて</div>
-        @foreach ($categories as $category)
-          <div class="chip">{{ $category->name }}</div>
-        @endforeach
-      </div>
-    </div>
-
-    <!-- Main Section Split -->
-    <div class="dashboard-grid">
-
-      <!-- Primary Grid -->
-      <div class="cards-grid">
-
-        @foreach ($events as $event)
-            <div class="card">
-            <div class="card-banner {{ $event->category->slug }}">
-                @if($event->image_path)
-                    <img src="{{ asset('storage/' . $event->image_path) }}" alt="{{ $event->title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                @else
-                    <div style="width: 100%; height: 100%; background-color: {{ $event->category->color }}; display: flex; align-items: center; justify-content: center;">
-                    </div>
-                @endif
-            </div>
-            <div class="card-body">
-                <div class="card-category">{{ $event->category->name }}</div>
-                <div class="card-title">{{ $event->title }}</div>
-                <div class="card-details">
-                <span>📅 {{ $event->event_date->format('Y/m/d') }} ({{ $event->event_date->format('D') }})</span>
-                <span>📍 {{ $event->location }}</span>
-                </div>
-                <div class="card-footer">
-                <span class="badge {{ $event->status->badgeClass() }}">{{ $event->status->label() }}</span>
-                <a href="{{ route('event.show', $event->id) }}" class="btn btn-default" style="padding: 4px 8px; font-size: 11px;">詳細</a>
-                </div>
-            </div>
-            </div>
-        @endforeach
-      </div>
-
-      <!-- Sidebar Widget -->
-      <div class="widget-area">
-        <div class="widget">
-          <div class="widget-title">
-            今後の予定
-            <a href="#">すべて見る →</a>
-          </div>
-          <div class="timeline-list">
-            @foreach ($events as $event)
-                <div class="timeline-item">
-                    <div class="date-badge">
-                    <div class="m">{{ $event->event_date->format('M') }}</div>
-                    <div class="d">{{ $event->event_date->format('d') }}</div>
-                    </div>
-                    <div class="timeline-content">
-                    <div class="t">{{ $event->title }}</div>
-                    <div class="sub">📍 {{ $event->location }}</div>
-                    </div>
-                </div>
-            @endforeach
-
-          </div>
+  <!-- Primary Cards Grid -->
+  <div class="main-cards-section">
+    <div class="cards-grid" id="events-grid">
+      @forelse ($events as $event)
+        <x-event-card :event="$event" />
+      @empty
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-state-icon">📅</div>
+          <div class="empty-state-title">登録されているイベントがありません</div>
+          <div class="empty-state-desc">「＋ イベント追加」ボタンから最初のイベントを登録してみましょう！</div>
+          <a href="{{ route('event.create') }}" class="btn btn-primary" style="margin-top: 8px;">＋ イベントを登録する</a>
         </div>
-      </div>
-
+      @endforelse
     </div>
 
+    <!-- 検索/フィルターでヒット0件用メッセージ -->
+    <div id="no-search-results" class="empty-state" style="display: none; margin-top: 16px;">
+      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-title">一致するイベントが見つかりませんでした</div>
+      <div class="empty-state-desc">検索キーワードやカテゴリフィルターを変更してお試しください。</div>
+      <button type="button" id="btn-reset-filters" class="btn btn-default" style="margin-top: 8px;">フィルターをリセット</button>
+    </div>
   </div>
-</main>
 
-</body>
-</html>
+  <!-- Sidebar Widget -->
+  <div class="widget-area">
+    <div class="widget">
+      <div class="widget-title">
+        <span>今後の予定</span>
+      </div>
+      <div class="timeline-list">
+        @forelse ($events->where('event_date', '>=', now()->startOfDay())->take(5) as $event)
+          <a href="{{ route('event.show', $event->id) }}" class="timeline-item">
+            <div class="date-badge">
+              <div class="m">{{ $event->event_date->format('M') }}</div>
+              <div class="d">{{ $event->event_date->format('d') }}</div>
+            </div>
+            <div class="timeline-content">
+              <div class="t">{{ $event->title }}</div>
+              <div class="sub">📍 {{ $event->location ?? '場所未定' }}</div>
+            </div>
+          </a>
+        @empty
+          <div style="font-size: 12px; color: var(--neutral-500); text-align: center; padding: 16px 0;">
+            今後の直近予定はありません
+          </div>
+        @endforelse
+      </div>
+    </div>
+  </div>
+
+</div>
+@endsection
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('event-search-input');
+    const filterChips = document.querySelectorAll('#category-filter-group .chip');
+    const eventCards = document.querySelectorAll('.event-card-item');
+    const noResultsState = document.getElementById('no-search-results');
+    const resetFiltersBtn = document.getElementById('btn-reset-filters');
+    const eventsGrid = document.getElementById('events-grid');
+
+    let currentCategoryId = 'all';
+    let currentSearchQuery = '';
+
+    // Cmd+K / Ctrl+K ショートカット
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInput?.focus();
+      }
+    });
+
+    // 検索入力イベント
+    searchInput?.addEventListener('input', (e) => {
+      currentSearchQuery = e.target.value.trim().toLowerCase();
+      applyFilters();
+    });
+
+    // カテゴリフィルタークリックイベント
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        filterChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentCategoryId = chip.dataset.categoryId;
+        applyFilters();
+      });
+    });
+
+    // リセットボタン
+    resetFiltersBtn?.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      currentSearchQuery = '';
+      currentCategoryId = 'all';
+      filterChips.forEach(c => c.classList.remove('active'));
+      document.querySelector('#category-filter-group .chip[data-category-id="all"]')?.classList.add('active');
+      applyFilters();
+    });
+
+    // フィルタリング適用関数
+    function applyFilters() {
+      let visibleCount = 0;
+
+      eventCards.forEach(card => {
+        const cardCategoryId = card.dataset.categoryId;
+        const cardTitle = card.dataset.title || '';
+        const cardLocation = card.dataset.location || '';
+
+        const matchesCategory = (currentCategoryId === 'all') || (cardCategoryId === currentCategoryId);
+        const matchesSearch = !currentSearchQuery || cardTitle.includes(currentSearchQuery) || cardLocation.includes(currentSearchQuery);
+
+        if (matchesCategory && matchesSearch) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // イベントカードが存在する場合のヒット0件表示
+      if (eventCards.length > 0) {
+        if (visibleCount === 0) {
+          noResultsState.style.display = 'flex';
+          eventsGrid.style.display = 'none';
+        } else {
+          noResultsState.style.display = 'none';
+          eventsGrid.style.display = 'grid';
+        }
+      }
+    }
+  });
+</script>
+@endpush
