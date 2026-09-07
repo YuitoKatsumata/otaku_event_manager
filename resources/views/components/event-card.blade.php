@@ -9,7 +9,6 @@
       <img src="{{ asset('storage/' . $event->image_path) }}" alt="{{ $event->title }}" style="width: 100%; height: 100%; object-fit: cover;">
     @else
       <div style="width: 100%; height: 100%; background-color: {{ $event->category->color ?? '#E2E8F0' }}; display: flex; align-items: center; justify-content: center;">
-        <span style="font-size: 24px; opacity: 0.7;">✨</span>
       </div>
     @endif
   </div>
