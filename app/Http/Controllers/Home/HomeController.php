@@ -18,6 +18,7 @@ class HomeController extends Controller
         // ログインユーザーのイベントデータを取得
         $events = $user->events()
             ->with('category')
+            ->where('event_date', '>=', now()->toDateString())
             ->orderBy('event_date', 'asc')
             ->limit(6)
             ->get();

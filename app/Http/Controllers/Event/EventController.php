@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Enums\EventStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class EventController extends Controller
 {
@@ -35,14 +36,14 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        abort_if($event->user_id !== Auth::id(), 403);
+        $this->authorize('view', $event);
 
         return view('event.show', compact('event'));
     }
 
     public function edit(Event $event)
     {
-        abort_if($event->user_id !== Auth::id(), 403);
+        $this->authorize('update', $event);
 
         $categories = Category::orderBy('sort_order', 'asc')->get();
         $statuses = EventStatus::cases();
@@ -51,7 +52,7 @@ class EventController extends Controller
 
     public function update(EventRequest $request, Event $event)
     {
-        abort_if($event->user_id !== Auth::id(), 403);
+        $this->authorize('update', $event);
 
         $validatedData = $request->validated();
 
@@ -70,7 +71,7 @@ class EventController extends Controller
 
     public function destroy(Event $event)
     {
-        abort_if($event->user_id !== Auth::id(), 403);
+        $this->authorize('delete', $event);
 
         $event->delete();
 

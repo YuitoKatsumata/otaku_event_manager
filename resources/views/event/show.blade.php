@@ -214,7 +214,6 @@
       </div>
     @else
       <div class="hero-banner" style="background-color: {{ $event->category->color ?? '#E2E8F0' }}; display: flex; align-items: center; justify-content: center;">
-        <span style="font-size: 48px; opacity: 0.8;">✨</span>
         <span class="hero-category-tag">{{ $event->category->name ?? 'カテゴリ未設定' }}</span>
       </div>
     @endif
